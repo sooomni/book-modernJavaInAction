@@ -8,7 +8,7 @@
 [4. 스트림 소개](#chap-4-스트림-소개)</br>
 
 
-## chap 1. 자바 8,9,10,11 : 무슨 일이 일어나고 있는가 ?
+## chap 1. 자바 8,9,10,11 : 무슨 일이 일어나고 있는가?
 ### 1. ***간결한 코드, 멀티코어 프로세서의 쉬운 활용***을 기반으로 새로운 기술 제공
   * <b>Stream API</b>
   * <b>메소드에 코드를 전달하는 기법</b> - 메소드 참조와 람다
@@ -42,7 +42,8 @@
     * Java 8 에서 제공하는 디폴트 메소드는 구현하지 않아도 되는 메소드를 인터페이스에 추가하여(메소드 본문은 인터페이스의 일부로 포함) 기존 코드를 건드리지 않고도 인터페이스 설계 확장을 가능하게 하는 기능이다. 
   * 자바 모듈
     * Java 9의 모듈 시스템 이용해 패키지 모음을 포함하는 모듈을 정의할 수 있게 되면서 JAR 같은 컴포넌트에 구조를 적용할 수 있게 됐다.
-<br>
+
+
 ## chap 2. 동적 파라미터화 코드 전달하기
 ### 1. 동적 파라미터화
   * 아직 어떻게 실행할 것인지 결정하지 않은 코드 블록. 코드 블록의 실행을 미루고 나중에 실행될 메소드의 인수로 전달하면, 이후 프로그램에서 호출. 
@@ -51,7 +52,8 @@
   cf) 인터페이스, Predicate 객체 구현 (과도한 선언) <br>
       -> 익명클래스 (선언과 인스턴스화를 동시에 하여 선언 과정을 줄이나 명시적으로 동작을 정의하는 메소드를 계속 구현) <br> 
       -> 람다 표현식 (코드 간결)
-<br>
+
+
 ## chap 3. 람다 표현식
 ### 1. 람다란 무엇인가
   * 특징
@@ -62,7 +64,7 @@
     
 ### 2. 함수형 인터페이스
   * 인터페이스에 선언하여 단 하나의 추상 메소드만을 갖도록 제한하는 역할
-  * 람다식으로 함수형 인터페이스의 추상 메소드 구현을 직접 전달 할 수 있으므로 <b>전체 표현식을 함수형 인터페이스의 인스턴스로 취급</b>할 수 있다.
+  * 람다식으로 함수형 인터페이스의 추상 메소드 구현을 직접 전달 할 수 있으므로 <b>함수형 인터페이스의 인스턴스로 취급</b>할 수 있다.
   * 즉, 람다식에서는 함수형 인터페이스의 인스턴스를 생성하여 함수를 변수처럼 선언/반환할 수 있다.
 
 ### 3. 함수 디스크립터
@@ -162,3 +164,58 @@
 ### 10. 메소드 참조
   * 메소드 참조 : 기존 메소드 정의를 재활용해 람다처럼 전달 가능
   * ex) (Apple apple) -> apple.getWeight()  /   Apple::getWeight (Apple 클래스에 정의된 getWeight 메소드 참조)
+
+### 11. 생성자 참조
+  ```
+    Function <Integer,Apple> c2 = Apple::new;    
+      // 람다 표현 Function <Integer,Apple> c2 = (weight) -> new Apple(weight);
+    Apple a2 = c2.apply(110);   //<- apply 메소드에 무게를 인수로 호출해 새로운 Apple 객체를 만들 수 있다
+
+    BiFunction <Color, Integer,Apple> c4 = (weight) -> new Apple(weight);
+  ```
+
+### 12. 정리
+  * *Apple을 weight 별로 비교해 inventory를 sort 하라*
+
+  * 동적 파라미터화 : 객체 안에 동작을 포함 (*sort 동작이 파라미터화* -> 전달 전략에 따라 sort 동작이 달라짐)
+    ```
+      public class AppleComparator implements Comparator<Apple>{
+        public int compare(Apple a1, Apple a2){
+          return a1.getWeight().compareTo(a2.getWeight());
+        }
+      }
+      inventory.sort(new AppleComparator());
+    ```
+  * 익명 클래스 : 한번만 사용 (선언과 인스턴스화 동시)
+    ```
+      inventory.sort(new Comparator<Apple>(){
+          public int compare (Apple a1, Apple a2){
+            return a1.getWeight().compareTo(a2.getWeight());
+          }
+        });  
+    ```
+  * 람다 표현식
+    ```
+      inventory.sort((Apple a1, Apple a2) -> a1.getWeight().compareTo(a2.getWeight());
+
+      inventory.sort((a1, a2) -> a1.getWeight().compareTo(a2.getWeight());    //형식 추론에 따른 간결화
+
+
+      Comparator<Apple> c = Comparator.comparing((Apple a) -> a.getWeight());   //정적 메소드 compaing 포함    
+      import static java.util.Comparator.comparing;
+      inventory.sort(comparing(apple -> apple.getWeight())); 
+    ```
+  * 메소드 참조 (정적 메소드)
+    ```
+      inventory.sort(comparing(Apple::getWeight));      
+    ```
+
+### 13. 람다식의 조합 : 디폴트 메소드
+  * Comparaotr 조합 : 역정렬 reversed()
+  * Predicate 조합 : 반전 negate() / or / and
+  * Function 조합 : f.andThen(g)  -> andThen g(f(x)) / compose f(g(x))
+
+
+## chap 4. 스트림 소개
+
+
