@@ -253,4 +253,38 @@
 *****
 
 ## chap 5. 스트림 활용
+### 1. 필터링
+  * 프리디케이트로 필터링 / 고유 요소만 필터링
+    1. predicate (boolean 반환 함수) 필터링 : 일치하는 모든 요소 포함하는 스트림 반환
+    ```
+    List <Dish> vege = menu.steram() 
+                           .filter(Dish::isVegetarian)
+                           .collect(toList());
+   ```
+    2. 고유 요소 필터링 : 고유 여부는 스트림에 만든 객체의 hashCode, equals로 결정 
+    ```
+    // 모든 짝수를 선택하고 중복을 필터링 
+
+    List<Integer> numbers = Arrays.asList(1,2,3,3,2,4);
+    numbers.steram() 
+           .filter(i -> i%2 == 0)
+           .distinct()
+           .forEach(System.out::println);
+
+      // System.out.println(2);
+      // System.out.println(4);
+    ```
+
+### 2. 스트림 슬라이싱
+  * 스트림 요소 선택하거나 스킵
+  1. predicate 이용한 슬라이싱
+  2. 스트림 축소
+  3. 요소 건너뛰기
+
+### 3. 매핑
+  * 특정 데이터 선택 기능
+  1. 스트림 각 요소에 함수 적용
+  2. 스트림 평면화
+
+*****
 
