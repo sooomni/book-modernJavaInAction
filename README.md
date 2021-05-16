@@ -254,71 +254,76 @@
 
 ## chap 5. 스트림 활용
 ### 1. 필터링
-  * 프리디케이트로 필터링 / 고유 요소만 필터링
-    1. predicate (boolean 반환 함수) 필터링 : 일치하는 모든 요소 포함하는 스트림 반환
-    ```
+  : 프리디케이트로 필터링 / 고유 요소만 필터링
+  1. predicate (boolean 반환 함수) 필터링 : 일치하는 모든 요소 포함하는 스트림 반환
+   ```
     List <Dish> vege = menu.steram() 
                            .filter(Dish::isVegetarian)
                            .collect(toList());
    ```
-    2. 고유 요소 필터링 : 고유 여부는 스트림에 만든 객체의 hashCode, equals로 결정 
-    ```
+  2. 고유 요소 필터링 : 고유 여부는 스트림에 만든 객체의 hashCode, equals로 결정 
+   ```    
     // 모든 짝수를 선택하고 중복을 필터링 
 
-    List<Integer> numbers = Arrays.asList(1,2,3,3,2,4);
-    numbers.steram() 
-           .filter(i -> i%2 == 0)
-           .distinct()
-           .forEach(System.out::println);
+      List<Integer> numbers = Arrays.asList(1,2,3,3,2,4);
+      numbers.steram() 
+             .filter(i -> i%2 == 0)
+             .distinct()
+             .forEach(System.out::println);
 
       // System.out.println(2);
       // System.out.println(4);
-    ```
-
-### 2. 스트림 슬라이싱<br> 
-  : 스트림 요소 선택하거나 스킵
-
+   ```
+    
+### 2. 스트림 슬라이싱
+ : 스트림 요소 선택하거나 스킵
   1. predicate 이용한 슬라이싱 
-    * takeWhile : 무한 스트림을 포함한 모든 스트림에 프리디케이트 적용해 슬라이스
-    ```    
-      //리스트 정렬 사실을 이용해 320 칼로리보다 크거나 같은 요리가 나왔을 때 반복 중단
-      List<Dish> slicedMenu1 = specialMenu.stream()
-                                        .takeWhile(dish.geCalories() < 320)
-                                        .colect(toList());
-    ```
-    * dropWhile : 프리디케이트가 거짓이 되면 그 지점에서 작업 중단 후 남은 요소 반환. 무한스트림에서도 동작.
-    ```    
-      //320 칼로리보다 큰 요소가 나왔을 때 작업 중단 후 남은 작업 (320보다 큰 요소) 반환
-      List<Dish> slicedMenu2 = specialMenu.stream()
-                                        .dropWhile(dish.geCalories() < 320)
-                                        .colect(toList());
-    ```
+   * takeWhile : 무한 스트림을 포함한 모든 스트림에 프리디케이트 적용해 슬라이스
+     ```
+       //리스트 정렬 사실을 이용해 320 칼로리보다 크거나 같은 요리가 나왔을 때 반복 중단
+       List<Dish> slicedMenu1 = specialMenu.stream()
+                                           .takeWhile(dish.geCalories() < 320)
+                                           .colect(toList());
+     ```
+  
+   * dropWhile : 프리디케이트가 거짓이 되면 그 지점에서 작업 중단 후 남은 요소 반환. 무한스트림에서도 동작
+     ```   
+        //320 칼로리보다 큰 요소가 나왔을 때 작업 중단 후 남은 작업 (320보다 큰 요소) 반환
+        List<Dish> slicedMenu2 = specialMenu.stream()
+                                            .dropWhile(dish.geCalories() < 320)
+                                            .colect(toList());
+     ```
   2. 스트림 축소
-    * limit(n) : 주어진 값 이상의 크기 갖는 새로운 스트림 반환. filter와 조합 시 프리디케이트와 일치하는 처음 N개 요소 선택 시 즉시 반환
+   * limit(n) : 주어진 값 이상의 크기 갖는 새로운 스트림 반환. filter와 조합 시 프리디케이트와 일치하는 처음 N개 요소 선택 시 즉시 반환
 
   3. 요소 건너뛰기
-    * skip(n) : 처음 n개 요소 제외한 스트림 반환 
+   * skip(n) : 처음 n개 요소 제외한 스트림 반환 
 
-### 3. 매핑<br> 
-  : 특정 데이터 선택 기능
+### 3. 매핑
+ : 특정 데이터 선택 기능
   1. 스트림 각 요소에 함수 적용
-    * map(func) : 인수로 제공된 함수가 각 요소에 적용된 결과가 새로운 요소로 매핑 (modify보다 transforming의 개념)
-    ```    
-      //각 요리명의 길이 구하기
-      List<Integer> dishNameLength = menu.stream()
-                                         .filter(Dish::getName)
-                                         .map(String::length)
-                                         .colect(toList());
-    ```
+   * map(func) : 인수로 제공된 함수가 각 요소에 적용된 결과가 새로운 요소로 매핑 (modify보다 transforming의 개념)
+      ```
+        //각 요리명의 길이 구하기
+        List<Integer> dishNameLength = menu.stream()
+                                           .filter(Dish::getName)
+                                           .map(String::length)
+                                           .colect(toList());
+      ```
   2. 스트림 평면화
-    * flatMap : 하나의 평면화된 스트림을 반환. 스트림의 각 값을 다른 스트림으로 만든 다음 모든 스트림을 하나의 스트림으로 연결하는 기능 수행
-    ```
-     List<String> uniqueCharacters = word.stream()
-                                         .map(word -> word.split(""))  //각 단어를 개별 문자로 포함하는 배열로 변환 Stream<String[]> 
-                                         .flatMap(Arrays::stream)      //생성된 스트림을 하나의 스트림으로 평면화 Stream<String>
-                                         .distinct()
-                                         .collect(toList());
-    ```
+   * flatMap : 하나의 평면화된 스트림을 반환. 스트림의 각 값을 다른 스트림으로 만든 다음 모든 스트림을 하나의 스트림으로 연결하는 기능 수행
+      ```
+        List<String> uniqueCharacters = word.stream()
+                                            .map(word -> word.split(""))  //각 단어를 개별 문자로 포함하는 배열로 변환 Stream<String[]> 
+                                            .flatMap(Arrays::stream)      //생성된 스트림을 하나의 스트림으로 평면화 Stream<String>
+                                            .distinct()
+                                           .collect(toList());
+      ```
+
+### 4. 검색과 매핑
+ : 특정 속성이 데이터 집합에 있는지 여부 검색
+  1. 프리디케이트가 적어도 한 요소와 일치하는지 확인
+  2. 프리디케이트가 모든 요소와 일치하는지 검사
 
 *****
 
