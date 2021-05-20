@@ -322,8 +322,24 @@
 
 ### 4. 검색과 매핑
  : 특정 속성이 데이터 집합에 있는지 여부 검색
-  1. 프리디케이트가 적어도 한 요소와 일치하는지 확인
-  2. 프리디케이트가 모든 요소와 일치하는지 검사
+  1. 프리디케이트가 적어도 한 요소와 일치하는지 확인 : anyMatch
+    ```
+      if(menu.stream().anyMatch(Dish::isVegetarian)){
+        System.out.println("the menu is (somewhat) vegetarian friendly! ");
+      }    
+    ```
+  2. 프리디케이트가 모든 요소와 일치하는지 검사 : allMatch / noneMatch
+    * allMatch : 모든 요소가 주어진 프리디케이트와 일치하는지 확인
+    * noneMatch : 주어진 프리디케이트와 일치하는 요소가 없는지 확인
+    ```
+      boolean isHealthy = menu.stream()
+                              .allMatch(dish -> dish.getCalories() < 1000);
+    ```
+  3. 쇼트서킷 평가 : 전체 스트림을 처리하지 않더라도 결과를 반환
+  <br> ex) allMatch, noneMatch, findFirst, findAny, limit ...
+
+  4. 요소 검사
+    * findAny : 현재 스트림에서 임의의 요소 반환
 
 *****
 
