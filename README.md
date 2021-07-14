@@ -2,7 +2,7 @@
 ###### 한빛미디어의 Modern Java in Action을 학습하고 요약한 내용입니다.
 
 ### Index
-[1. 자바 8,9,10,11 : 무슨 일이 일어나고 있는가](#chap-1-자바-8-9-10-11-:-무슨-일이-일어나고-있는가)<br>
+[1. 자바 8,9,10,11 : 무슨 일이 일어나고 있는가](#chap-1-자바-891011--무슨-일이-일어나고-있는가)<br>
 [2. 동적 파라미터화 코드 전달하기](#chap-2-동적-파라미터화-코드-전달하기)</br>
 [3. 람다 표현식](#chap-3-람다-표현식)</br>
 [4. 스트림 소개](#chap-4-스트림-소개)</br>
@@ -317,29 +317,79 @@
                                             .map(word -> word.split(""))  //각 단어를 개별 문자로 포함하는 배열로 변환 Stream<String[]> 
                                             .flatMap(Arrays::stream)      //생성된 스트림을 하나의 스트림으로 평면화 Stream<String>
                                             .distinct()
-                                           .collect(toList());
+                                            .collect(toList());
       ```
 
 ### 4. 검색과 매핑
  : 특정 속성이 데이터 집합에 있는지 여부 검색
   1. 프리디케이트가 적어도 한 요소와 일치하는지 확인 : anyMatch
-    ```
+   ```
       if(menu.stream().anyMatch(Dish::isVegetarian)){
         System.out.println("the menu is (somewhat) vegetarian friendly! ");
       }    
-    ```
+   ```
   2. 프리디케이트가 모든 요소와 일치하는지 검사 : allMatch / noneMatch
-    * allMatch : 모든 요소가 주어진 프리디케이트와 일치하는지 확인
-    * noneMatch : 주어진 프리디케이트와 일치하는 요소가 없는지 확인
-    ```
-      boolean isHealthy = menu.stream()
-                              .allMatch(dish -> dish.getCalories() < 1000);
-    ```
-  3. 쇼트서킷 평가 : 전체 스트림을 처리하지 않더라도 결과를 반환
+   * allMatch : 모든 요소가 주어진 프리디케이트와 일치하는지 확인
+   * noneMatch : 주어진 프리디케이트와 일치하는 요소가 없는지 확인
+     ```
+       boolean isHealthy = menu.stream()
+                               .allMatch(dish -> dish.getCalories() < 1000);
+     ```
+  * 쇼트서킷 평가 : 전체 스트림을 처리하지 않더라도 원하는 요소를 찾으면 결과를 즉시 반환
   <br> ex) allMatch, noneMatch, findFirst, findAny, limit ...
 
-  4. 요소 검사
-    * findAny : 현재 스트림에서 임의의 요소 반환
+  3. 요소 검사
+   * findAny : 현재 스트림에서 임의의 요소 반환
+      ```
+        Optional <Dish> dish = menu.stream().filter(Dish::isVegetarian).findAny();
+      ```
+   * Optional : 값의 존재나 부재 여부 표현하는 컨테이너 클래스
 
+  4. 첫 번째 요소 찾기
+   * findFirst()
+     ```
+        List<Integer> list = Arrays.asList(1,2,3,4,5);
+        Optional<Integer> FirstSquareDivisibleByThree = list.stream().map(n->n*n).filter(n -> n%3 == 0).findFirst();
+     ```
+
+### 5. reducing
+  1. reducing
+   * reducing은 2개의 인수 가짐
+      - 초깃값 0
+      - 두 요소를 조합해 새로운 값 만드는 BinaryOperator<T>
+   * 누적 연산으로 람다를 계속 호출하여 누적 연산 결과를 얻어가는 방식
+   * 초기값이 없다면 합산 결과 반환할 수 없음
+     ```
+      int sum = numbers.stream().reduce(0,(a,b) -> a+b);  // reduce를 이용해 stream의 모든 요소를 더함 (numbers는 Integer)
+      int sum = numbers.stream().reduce(0,Integer::sum);  // Integer 클래스의 정적메소드 sum 활용
+
+      int mul = numbers.stream().reduce(1,(a,b) -> a*b);  // reduce를 이용해 stream의 모든 요소를 곱함    
+     ```
+  2. 최대값과 최소값
+   * reduce를 이용해 최대값 최소값 찾기
+     ```
+       Optional <Integer> max = numbers.stream().reduce(Integer::max);              
+       Optional <Integer> max = numbers.stream().reduce(Integer::min);  
+     ```
+ 
+   * Stream 으로 최대값 찾기
+     - 숫자 비교
+        ```
+          List <Integer> alist = Arrays.asList(1,2,3);
+          Integer maxVar = alist.stream().mapToInt(x->x).max().getAsInt();
+          Integer maxVar = alist.stream().max(Comparator.comparing(x->x));
+
+          int [] arr = {1,2,3};
+          int max = alist.stream(arr).max().getAsInt();
+        ```
+     - String 비교
+        ```
+          String [] line = {"hello","world","hi"};
+          int maxLength = alist.stream(line).mapToInt(String::length).max().getAsInt();
+        ```
+        
 *****
 
+### 6. 실전 연습
+### 7. 숫자형 스트림
+### 8. 스트림 만들기
