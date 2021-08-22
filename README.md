@@ -388,8 +388,41 @@
           int maxLength = alist.stream(line).mapToInt(String::length).max().getAsInt();
         ```
         
+### 6. 숫자형 스트림
+  1. 기본형 특화 스트림
+	  * IntStream / DoubleStream / LongStream
+	  * 숫자 스트림으로 매핑
+      ```
+        int calories = menu.stream().mapToInt(Dish::getCalories) // Integer형식으로 추출 후 IntStream 반환 (Stream<Integer>랑 다름)
+                                    .sum()						// 비어있으면 0 반환
+      ``` 
+	  * 객체 스트림으로 복원
+      ```
+        IntStream intStream = menu.stream().mapToInt(Dish::getCalories);
+        Stream<Integer> stream = intStream.boxed(); 	// 숫자스트림을 스트림으로 변환
+      ``` 	 	
+   * 기본형 특화 스트림 버전 Optional 
+     	- 스트림에 요소가 없는 상황과 실제 값 구분 위함
+     	- OptionalInt / OptionalDouble / OptionalLong
+        ```
+          int max = menu.stream().mapToInt(Dish::getCalories).max().orElse(1); // 값이 없을 때 사용할 기본값 명시
+        ```	
+  2. 숫자 범위
+	  * range(m,m) : n과 m 미포함
+	  * rangeClosed(n,m) : n과 m 포함
+	    ```
+        IntStream evenNumbers = IntStream.rangeClosed(1,100)  //1~100 범위 표현
+                                         .filter(n -> n%2 == 0);
+        evenNumbers.count(); 		//1~100 중 짝수 50 반환 | rangeClosed 아닌 range였다면 1과 100포함하지 않으므로 49 반환
+	    ```
+  3. 피타고라스 수
+ 	    ```
+ 	      Stream <int[]> pythgoreanTriples = IntStream.rangeClosed(1,100).boxed()
+                                                    .flatMap(a -> IntStream.rangeClosed(a,100)
+                                                                           .filter(b -> Math.sqrt(a*a + b*b % 1 == 0)
+                                                                           .mapToObj(b -> new int[]{a,b,(int)Math.sqrt(a*a + b*b)})
+                                                    );
+ 	      pythgoreanTriples.limit(5).forEach(t -> System.out.println(t[0]+", "+t[1]+", "+t[2]));
+ 	    ```
+### 7. 스트림 만들기
 *****
-
-### 6. 실전 연습
-### 7. 숫자형 스트림
-### 8. 스트림 만들기
