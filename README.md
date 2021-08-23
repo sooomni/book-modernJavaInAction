@@ -7,6 +7,7 @@
 [3. 람다 표현식](#chap-3-람다-표현식)</br>
 [4. 스트림 소개](#chap-4-스트림-소개)</br>
 [5. 스트림 활용](#chap-5-스트림-활용)</br>
+[6. 스트림으로 데이터 수집](#chap-6-스트림으로-데이터-수집)</br>
 
 ## chap 1. 자바 8,9,10,11 : 무슨 일이 일어나고 있는가
 ### 1. ***간결한 코드, 멀티코어 프로세서의 쉬운 활용***을 기반으로 새로운 기술 제공
@@ -425,4 +426,78 @@
  	      pythgoreanTriples.limit(5).forEach(t -> System.out.println(t[0]+", "+t[1]+", "+t[2]));
  	    ```
 ### 7. 스트림 만들기
+  1. 값으로 스트림 만들기
+     	```
+	   Stream<String> stream = Stream.of("Modern","Java","In","Action");
+	   stream.map(String::toUpperCase).forEach(System.out::println);
+		
+	   Stream.empty();  // 스트림 비우기
+     	```
+  2. null이 될  있는 객체로 스트림 만들기
+     	```
+	    Stream<String> values = Stream.of("config","home","user").flatMap(key -> Stream.ofNullable(System.getProperty(key)));
+     	```
+  3. 배열로 스트리 만들기
+     	```
+	    int [] numbers = {1,2,3,4,5,6,7,10};
+	    int sum = Arrays.stream(numbers).sum();
+     	```
+  4. 파일로 스트림 만들기
+     	```
+	    long uniqueWords = 0;
+	    try(Stream<String> lines = Files.lines(Paths.get("data.txt",Charset.defaultCharset())){
+	        uniqueWords = lines.flatMap(line -> Arrays.stream(line.split(" ")))
+			           .distinct()
+			           .count();
+	    }
+	    catch(IOException){
+	    }
+     	```
+  5. 함수로 무한스트림 만들기
+   * iterate 메소드
+   	- 초깃값과 람다를 인수로 받아 새로운 값을 끊임없이 생산
+        - 기존 결과에 의존해 순차적으로 연산을 수행
+       	- 요청할 때마다 값을 생산할 수 있으며 끝이 없어 무한스트림을 만듬 -> 언바운드 스트림
+     	   ```
+	       Stream.iterate(0,n->n+2)
+	             .limit(10)
+	             .forEach(System.out::println);
+     	   ```
+        - 두 번째 인수를 predicate를 받아 작업 마치는 기준으로 사용 가능 (같은 동작을 filter는 불가하지만, 쇼트서킷을 지원하는 takeWhile은 가능)
+     	   ```
+	       Stream.iterate(0,n->n < 100, n -> n+4)
+	             .forEach(System.out::println);
+	
+	       Stream.iterate(0,n -> n+4)
+	             .takeWhile(n -> n< 100)
+	             .forEach(System.out::println);
+     	   ```
+   * generate 메소드
+        - 무한 스트림을 만들 수는 있으나 생산된 각 값을 연속적으로 계산하지는 않음     
+     	   ```
+	       Stream.generate(Math::random)
+	             .limit(5)			 
+	             .forEach(System.out::println);
+     	   ```
+        - generate에 주어진 발행자에 상태를 저장하고 스트림의 다음 값을 만들 때 고칠 수는 있겠으나, 이런 case는 피해야 함 
+        - generate에 주어진 발행자(익명클래스)에 상태 필트를 정의하면 부작용이 생길 수 있음 </br>	
+          cf) 반면 람다는 상태를 바꾸지 않기 때문에 부작용이 없음
+        - -> 스트림을 병렬로 처리하려면 불변 상태를 유지해야함 </br> (불변 상태 : 각 과정에서 새 값을 생성하더라도 기존 값은 변경되지 않음 / 가변 상태 : 객체 상태가 바뀌며 새로운 값 생간)
+
+*****
+	
+### chap 6. 스트림으로 데이터 수집
+  1. 컬렉터란 무엇인가 ?
+   * 고급 리듀싱 기능을 수행하는 컬렉터
+	 - collect : 리듀싱 연산을 이용해 스트림의 각 요소를 방문하여 작업 처리 (명령형 프로그래밍에서 개발자가 직접 구현하던 부분)
+	 - Collectors 유틸리티 틀래스 : 자주 사용하는 컬렉터 인스턴스를 손쉽게 생성할 수 있는 정적 팩토리 메소드 제공 <br> ex) .collect(Collectors.toList())
+   * 미리 정의된 컬렉터
+	 - 3가지 메소드 기능 : 스트림 요소를 하나의 값으로 리듀스 하고 요약 / 요소 그룹화 / 요소 분할
+  
+  2. 리듀싱과 요약
+  3. 그룹화
+  4. 분할
+  5. Collector 인터페이스
+  6. 커스텀 컬렉터를 구현해서 성능 개선하기
+
 *****
