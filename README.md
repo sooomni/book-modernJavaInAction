@@ -495,9 +495,77 @@
 	 - 3가지 메소드 기능 : 스트림 요소를 하나의 값으로 리듀스 하고 요약 / 요소 그룹화 / 요소 분할
   
   2. 리듀싱과 요약
-  3. 그룹화
-  4. 분할
-  5. Collector 인터페이스
-  6. 커스텀 컬렉터를 구현해서 성능 개선하기
+   * 최댓값, 최솟값 : Collectors.maxBy, Collectors.minBy
+	 - 스트림을 요소로 비교하는데 사용할 Comparator를 인수로 받아 스트림의 최댓값과 최솟값을 계산
+	    ```	
+		Comparator<Dish> dishCaloriesCom = Comparator.comparingInt(Dish::getColories);
+		Optional <Dish> mostCaloriesDish = menu.stream.collect(maxBy(dishCaloriesCom));
+	    ```
+	
+   * 합계 : Collectors.summingInt
+	 - 객체를 int로 매핑하는 컬렉터를 반환하고 collect() 요약 작업을 거쳐 합계 계산
+	 - 같은 역할을 하는 Collectors.summingLong, Collectors.summingDouble
+	    ```		
+		int total = menu.stream().collect(summingInt(Dish::getCalories));
+	    ```		
+   * 평균 : Collectors.averagingInt
+	    ```		
+		double avgCalories = menu.stream().collect(averagingInt(Dish::getCalories));
+	    ```			
+   * 요약 : Collectors.summarizingInt(Dish::getCalories)
+   * 문자열 연결 : joining()
+	 - 스트림의 각 객체에 toString 메소드를 호출해 추출하나 모든 문자열을 하나의 문자열로 연결해서 반환한다.
+	    ```		
+		String shortMenu = menu.stream().map(Dish::getName).collect(joining(", "));
+	    ```	
+   * 리듀싱 요약 연산 : Collectors.reducing
+	    ```	
+		int totalCalories = menu.stream().collect(reducing(0,Dish::getCalories,(i,j) -> i+j));
+	    ```		
+   * <b> collect 와 reduce </b>
+      - collect 메소드는 도출하려는 결과를 누적하는 컨테이너를 바꾸도록 설계된 메소드
+      - reduce 메소드는 두 값을 하나로 도출하는 불변형 연산 
+      - 의미론적으로 reduce를 조심해야 하는 것은, 여러 스레드가 동시에 같은 데이터를 고치면 리스트 자체에 문제가 생김 = 리듀싱 연산은 병렬 수행 불가 => 가변 컨테이너 관련 작업이면서 병렬성을 확보하려면 collect 메소드로 리듀싱 연산 구현해야
+	
+ 3. 그룹화
+  * 분류 : Collectors.groupingBy
+	- groupingBy() 인수로 받은 함수에 일치하는 모든 case로 분류. 연산의 결과로 그룹화 함수가 반환하는 key, key에 대응하는 값을 갖는 Map으로 반환
+	- 메소드 참조 대신 람다 표현식으로 필요 로직 구현 가능
+   
+  * 그룹화된 요소 조작 : groupinBy의 인수
+	- filtering() : 필터 프레디케이트를 만족하지 않더라도 <b> 값이 비어있는 key로 추가 </b> 하도록 처리
+		```	
+			...
+			.collect(groupingBy(Dish::getType,filtering(dish -> dish.getCalories() > 500, toLish());
+		```
+	- mapping()
+	 	```	
+			...
+			.collect(groupingBy(Dish::getType,mappping(Dish::getName, toLish());
+	 	```
+	- flatMapping()
+	 	```	
+			...
+			.collect(groupingBy(Dish::getType,flatMapping(dish -> dishTags.get( dish.getName() ).stream(), toSet() ));
+	 	```	
+   * 다수준 그룹화 : groupinBy() 안쪽에 스트림의 항목을 분류할 두 번째 기준을 정의하는 내부 groupinBy를 전달해 두 수준으로 스트림 항목 그룹화. n수준 트리 구조로 표현
+	 	```	
+			...
+			.collect(groupingBy(Dish::getType,groupingBy(dish -> {
+					if(dish.getCalories() <= 400) return CalorieLevel.DIET;
+					else return CalorieLevel.NORMAL; 				
+					})
+				));						
+	 	```
+   * 서브그룹으로 데이터 수집
+	 	```
+			Map<Dish.Type,Long> typeCount = menu.stream().collect(groupingBy(Dish::getType,counting()));
+	 	```
+
+ 4. 분할
+  * 분할 : Collectors.partitioningBy
+	
+ 5. Collector 인터페이스
+ 6. 커스텀 컬렉터를 구현해서 성능 개선하기
 
 *****
