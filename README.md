@@ -8,6 +8,7 @@
 [4. 스트림 소개](#chap-4-스트림-소개)</br>
 [5. 스트림 활용](#chap-5-스트림-활용)</br>
 [6. 스트림으로 데이터 수집](#chap-6-스트림으로-데이터-수집)</br>
+[7. 병렬 데이터 처리와 성능](#chap-7-병렬-데이터-처리와-성능)</br>
 
 ## chap 1. 자바 8,9,10,11 : 무슨 일이 일어나고 있는가
 ### 1. ***간결한 코드, 멀티코어 프로세서의 쉬운 활용***을 기반으로 새로운 기술 제공
@@ -564,8 +565,54 @@
 
  4. 분할
   * 분할 : Collectors.partitioningBy
+  * Boolean을 반환하는 프리디케이트를 분류함수로 사용하는 그룹화 기능으로 그룹화 맵은 최대 두 개의 그룹 (참 or 거짓)으로 분류
+  * 참, 거짓 두 요소의 스트림 리스트를 모두 유지한다는 장점
+	```
+			Map<Boolean,List<Dish>> partitionedMenu = menu.stream().collect(partitioningBy(Dish::isVegetarian));
+			// {false=[pork,beef ...], true={french fries, rice ...}}
+	
+			Lish<Dish> vegetarianDishes = partitionedMenu.get(true);
+	
+			Lish<Dish> vegetarianDishes = menu.stream().filter(Dish::isVegetarian).collect(toList());
+	
+			Map<Boolean, MAp<Dish.Tyoe, Lish<Dish>>> vegetarianDishsByType = menu.stream().collect(
+				partitiongBy(Dish::isVegetarian, groupingBy(Dish::getType))); // 오버로드 된 버전의 partitioningBy()
+			//{false=[FISH=[...],MEAT=[...]],true=[OTHER=[...]]}
+	```
 	
  5. Collector 인터페이스
- 6. 커스텀 컬렉터를 구현해서 성능 개선하기
-
+  * Collector 인터페이스 : 리듀싱 연산 (컬렉터)를 어떻게 구현할지 제공하는 메소드 집합으로 구성
+  * public interface Collector<T,A,R> : T는 스트림 요소 형식, A는 중간 결과 누적 객체 형식, R은 collect 연산의 최종 결과 형식
+  * supplier() : 새로운 결과 컨테이너 만들기
+	- 수집 과정에서 빈 누적자 인스턴스를 만드는 파라미터 없는 함수 -> 비어있는 스트림의 수집 과정의 결과로 비어있는 Supplier 반환
+		```
+		 	public Supplier <Lish<T>> supplier(){ return () -> new ArrayLish<T>(); }
+		```
+  * accumulator() : 결과 컨테이너에 요소 추가
+	- 리듀싱 연산을 수행하는 함수를 반환
+	- 스트림에서 n번쨰 요소 탐색 시에 누적자와 n 번째 요소를 함수에 적용
+	- 요소 탐색 시에 누적자 내부 상태가 바뀌므로 반환 값은 void
+		```
+			public BiConsumer<Lish<T>,T> accumulator(){ return (list, item) -. list.add(item); }
+		```
+  * finisher() : 최종 변환 값을 결과 컨테이너로 적용
+	- 스트림 탐색 끝나고 누적자 객체를 최종 결과로 변환하면서 누적 과정을 끝낼 때 호출할 함수를 반환
+		```
+			public Function<Lish<T>,T> finisher(){ return Function.identity(); }
+		```
+  * combiner() : 두 결과 컨테이너 병합 
+	- combiner는 스트림의 서로 다른 서브파트를 병렬로 처리할 때, 누적자가 결과를 어떻게 처리할지 정의 (ex. toList는 수집된 항목 리스트를 첫 번째 서브파트 결과 뒤에 추가 ) 
+		```
+			public BinaryOperator<Lish<T>> combiner(){ return (list1, list2) -> list.addAll(list2); return list1; } }
+		```
+  * characteristics() : 컬렉터의 연산을 정의하는 characteristics 형식의 불변 집합 반환
+	- 스트림을 병렬로 리뉴스 할 것인지, 병렬로 리듀스한다면 어떤 최저고하를 선택해야 할지 힌트 제공
+	- 세 항목을 포함하는 열거형 : UNORDERED, CONCURRENT, IDENTIFY_FINISH
+	
 *****
+	
+### chap 7. 병렬 데이터 처리와 성능
+ 1. 병렬 스트림
+ 2. 포크/조인 프레임워크
+ 3. Spliterator 인터페이스
+	
